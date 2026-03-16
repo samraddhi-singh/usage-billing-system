@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Usage Billing System</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin:40px;
+}
+
+input{
+    padding:8px;
+    margin:5px;
+}
+
+button{
+    padding:8px 14px;
+    margin:5px;
+    cursor:pointer;
+}
+
+.section{
+    margin-top:20px;
+}
+
+#output{
+    margin-top:20px;
+    font-weight:bold;
+    color:green;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>Usage Billing System</h2>
+
+<div class="section">
+<h3>Add Resource</h3>
+
+<input id="resourceId" placeholder="Resource ID">
+<input id="capacity" placeholder="Capacity">
+<input id="firstHour" placeholder="First Hour Cost">
+<input id="extraHour" placeholder="Additional Hour Cost">
+
+<button onclick="addResource()">Add Resource</button>
+</div>
+
+
+<div class="section">
+<h3>Start Usage</h3>
+
+<input id="userId" placeholder="User ID">
+<input id="resourceUse" placeholder="Resource ID">
+
+<button onclick="startUsage()">Start Usage</button>
+</div>
+
+
+<div class="section">
+<h3>Stop Usage</h3>
+
+<input id="stopUser" placeholder="User ID">
+
+<button onclick="stopUsage()">Stop Usage</button>
+</div>
+
+<div id="output"></div>
+
+<script>
+
+let resources = {}
+let sessions = {}
+
+function addResource(){
+
+let id=document.getElementById("resourceId").value
+let capacity=parseInt(document.getElementById("capacity").value)
+let first=parseInt(document.getElementById("firstHour").value)
+let extra=parseInt(document.getElementById("extraHour").value)
+
+resources[id]={
+capacity:capacity,
+current:0,
+first:first,
+extra:extra
+}
+
+document.getElementById("output").innerText="Resource "+id+" added"
+}
+
+
+function startUsage(){
+
+let user=document.getElementById("userId").value
+let res=document.getElementById("resourceUse").value
+
+if(!resources[res]){
+document.getElementById("output").innerText="Resource not found"
+return
+}
+
+if(resources[res].current>=resources[res].capacity){
+document.getElementById("output").innerText="Resource full"
+return
+}
+
+sessions[user]={
+resource:res,
+start:Date.now()
+}
+
+resources[res].current++
+
+document.getElementById("output").innerText="Usage started for "+user
+}
+
+
+function stopUsage(){
+
+let user=document.getElementById("stopUser").value
+
+if(!sessions[user]){
+document.getElementById("output").innerText="No active session"
+return
+}
+
+let session=sessions[user]
+let res=resources[session.resource]
+
+let duration=(Date.now()-session.start)/60000
+let hours=Math.ceil(duration/60)
+
+let bill=res.first
+
+if(hours>1){
+bill+=(hours-1)*res.extra
+}
+
+res.current--
+
+delete sessions[user]
+
+document.getElementById("output").innerText=
+"Usage stopped for "+user+
+" | Duration: "+duration.toFixed(2)+" mins"+
+" | Bill: ₹"+bill
+
+}
+
+</script>
+
+</body>
+</html>
